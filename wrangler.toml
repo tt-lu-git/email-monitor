@@ -1,0 +1,47 @@
+name = "email-monitor"
+main = "src/index.ts"
+compatibility_date = "2025-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# Replace the ids below with your own after running:
+#   wrangler kv namespace create email-monitor-kv
+#   wrangler kv namespace create email-monitor-kv --preview
+[[kv_namespaces]]
+binding    = "KV"
+id         = "YOUR_KV_ID"
+preview_id = "YOUR_KV_PREVIEW_ID"
+
+# Replace database_id after running:
+#   wrangler d1 create email-monitor-db
+[[d1_databases]]
+binding        = "DB"
+database_name  = "email-monitor-db"
+database_id    = "YOUR_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[ai]
+binding = "AI"
+
+[triggers]
+crons = [
+  "*/30 * * * *",
+  "0 * * * *",
+  "0 */2 * * *",
+  "0 0 * * *",
+  "0 8 * * *"
+]
+
+# Secrets — run these before deploying:
+#   wrangler secret put GMAIL_REFRESH_TOKEN
+#   wrangler secret put GOOGLE_CLIENT_ID
+#   wrangler secret put GOOGLE_CLIENT_SECRET
+#   wrangler secret put GMAIL_WATCH_TOPIC
+#   wrangler secret put OPENROUTER_API_KEY
+#   wrangler secret put GOTIFY_SERVER        # https://<your-gotify>.fly.dev
+#   wrangler secret put GOTIFY_TOKEN         # app token from Gotify UI
+#   wrangler secret put PUBSUB_AUDIENCE      # https://<your-worker>.workers.dev/pubsub/webhook
+#   wrangler secret put PUBSUB_SA_EMAIL      # <service-account>@<gcp-project>.iam.gserviceaccount.com
+#   wrangler secret put DEBUG_SECRET         # any random string, protects /debug and /test/notify
