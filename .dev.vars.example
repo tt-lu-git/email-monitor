@@ -1,0 +1,10 @@
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GMAIL_REFRESH_TOKEN=
+GMAIL_WATCH_TOPIC=projects/<project>/topics/<topic>
+OPENROUTER_API_KEY=
+GOTIFY_SERVER=https://<your-gotify-host>
+GOTIFY_TOKEN=
+PUBSUB_AUDIENCE=https://<your-worker>.workers.dev/pubsub/webhook
+PUBSUB_SA_EMAIL=<service-account>@<project>.iam.gserviceaccount.com
+DEBUG_SECRET=
