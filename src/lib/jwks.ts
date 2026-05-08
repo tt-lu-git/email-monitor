@@ -19,7 +19,8 @@ export async function getGoogleJWKS(env: Env): Promise<string> {
 
   const cc   = res.headers.get('Cache-Control') ?? '';
   const match = /max-age=(\d+)/.exec(cc);
-  const ttl  = match ? parseInt(match[1]!, 10) : FALLBACK_TTL;
+  const MIN_TTL = 300;
+  const ttl  = Math.max(match ? parseInt(match[1]!, 10) : FALLBACK_TTL, MIN_TTL);
 
   await env.KV.put(KV_KEY, body, { expirationTtl: ttl });
   return body;

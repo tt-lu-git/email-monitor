@@ -5,11 +5,16 @@ import { fetchHistory, fallbackSync } from './history';
 import { fetchMessage } from './messages';
 import { getState, setState, isProcessed, markProcessed } from '../db';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function processWebhook(
   payload: GmailWebhookPayload,
   env: Env
 ): Promise<EmailMessage[]> {
   const { emailAddress } = payload;
+  if (!EMAIL_RE.test(emailAddress)) {
+    throw new Error(`webhook: invalid emailAddress in payload: ${emailAddress}`);
+  }
   const historyKey = `gmail:history_id:${emailAddress}`;
   const tokenKey   = `gmail:access_token:${emailAddress}`;
 

@@ -10,49 +10,56 @@ const NOW = Date.now();
 const MOCK_EMAILS: PendingEmail[] = [
   {
     id: 'msg001',
-    from_addr: 'Marriott Bonvoy <marriott@info.marriott.com>',
-    subject: 'Your hotel folio for New York Marriott Marquis',
-    summary: 'Hotel stay confirmed, $1,042.50 charged to Visa ending 4242. Check-in May 5, check-out May 7.',
+    from_addr: 'Grand Hotel <reservations@grandhotel.example>',
+    subject: 'Your hotel folio for Grand Hotel Downtown',
+    summary: 'Hotel stay confirmed, $250.00 charged. Check-in Jan 10, check-out Jan 12.',
     priority: 'High',
     received_at: NOW - 1000 * 60 * 20,
   },
   {
     id: 'msg002',
-    from_addr: 'Target <target@email.target.com>',
+    from_addr: 'ShopCo <orders@shopco.example>',
     subject: 'Your order has shipped!',
-    summary: 'Order confirmed $34.99, arrives Jun 3.',
+    summary: 'Order #5678 for $34.99 has shipped, estimated delivery Jan 15.',
     priority: 'High',
     received_at: NOW - 1000 * 60 * 15,
   },
   {
     id: 'msg003',
-    from_addr: 'Target <target@email.target.com>',
+    from_addr: 'ShopCo <orders@shopco.example>',
     subject: 'Your package was delivered',
-    summary: 'Shipping update for order #1234: delivered to front door at 2:14 PM.',
+    summary: 'Order #5678 delivered to front door at 2:14 PM.',
     priority: 'High',
     received_at: NOW - 1000 * 60 * 10,
   },
   {
     id: 'msg004',
-    from_addr: 'Reminders <notify@parentsquare.com>',
-    subject: 'Upcoming event: Spring Carnival May 15',
-    summary: 'Spring Carnival is on May 15, 11am–3pm at Lincoln Elementary. Volunteers needed.',
+    from_addr: 'Community Updates <updates@yourorganization.example>',
+    subject: 'Upcoming event: Spring Fair Jan 20',
+    summary: 'Spring Fair is on Jan 20, 11am–3pm at Riverside Community Center. Volunteers needed.',
     priority: 'Medium',
     received_at: NOW - 1000 * 60 * 45,
   },
   {
     id: 'msg005',
-    from_addr: 'USPS <usps@informeddelivery.usps.com>',
+    from_addr: 'Delivery Service <notify@deliveryservice.example>',
     subject: 'Informed Delivery: 2 packages arriving today',
-    summary: 'Two packages expected by 8pm today: Amazon and Chewy.',
+    summary: 'Two packages expected by 8pm today.',
     priority: 'Low',
     received_at: NOW - 1000 * 60 * 90,
   },
 ];
 
+function timingSafeEqual(a: string, b: string): boolean {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  if (aBytes.length !== bBytes.length) return false;
+  return crypto.subtle.timingSafeEqual(aBytes, bBytes);
+}
+
 export async function testNotifyHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
-  const secret = c.req.query('secret');
-  if (!c.env.DEBUG_SECRET || secret !== c.env.DEBUG_SECRET) {
+  const secret = c.req.query('secret') ?? '';
+  if (!c.env.DEBUG_SECRET || !timingSafeEqual(secret, c.env.DEBUG_SECRET)) {
     return c.json({ error: 'unauthorized' }, 401);
   }
 
@@ -77,7 +84,7 @@ export async function testNotifyHandler(c: Context<{ Bindings: Env }>): Promise<
 
   } else if (scenario === 'immediate-high') {
     const p = formatImmediate(
-      { from: 'Marriott Bonvoy <marriott@info.marriott.com>', subject: 'Hotel folio: New York Marriott Marquis', summary: 'Hotel stay confirmed, $1,042.50 charged to Visa ending 4242. Stay: May 5–7.' },
+      { from: 'Grand Hotel <reservations@grandhotel.example>', subject: 'Hotel folio: Grand Hotel Downtown', summary: 'Hotel stay confirmed, $250.00 charged. Stay: Jan 10–12.' },
       'High',
     );
     await send('immediate-high', p);
@@ -134,7 +141,9 @@ export async function testNotifyHandler(c: Context<{ Bindings: Env }>): Promise<
 
   } else if (scenario === 'resend-since') {
     const sinceParam = c.req.query('since');
-    if (!sinceParam) return c.json({ error: 'resend-since requires ?since=<timestamp_ms>' }, 400);
+    if (!sinceParam || !Number.isFinite(Number(sinceParam))) {
+      return c.json({ error: 'resend-since requires ?since=<timestamp_ms> (integer)' }, 400);
+    }
     const since = Number(sinceParam);
     const { meta } = await c.env.DB.prepare(
       'UPDATE pending_emails SET sent_at = NULL WHERE received_at >= ? OR sent_at >= ?'

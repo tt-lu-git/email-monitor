@@ -16,5 +16,5 @@ export interface Env {
   PUBSUB_AUDIENCE: string;
   PUBSUB_SA_EMAIL:  string;
 
-  DEBUG_SECRET?: string;
+  DEBUG_SECRET: string;
 }

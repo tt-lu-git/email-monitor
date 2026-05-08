@@ -55,7 +55,7 @@ describe('applyRules', () => {
   it('allowlisted domain bypasses Ignore even if CATEGORY_PROMOTIONS', () => {
     const result = applyRules({
       ...base,
-      from: 'Reminders <notify@parentsquare.com>',
+      from: 'Updates <notify@yourcompany.com>',
       labels: ['CATEGORY_PROMOTIONS'],
     });
     expect(result).toBeNull(); // goes to AI

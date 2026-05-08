@@ -1,10 +1,17 @@
 import type { Handler } from 'hono';
 import type { Env }     from '../env';
 
+function timingSafeEqual(a: string, b: string): boolean {
+  const aBytes = new TextEncoder().encode(a);
+  const bBytes = new TextEncoder().encode(b);
+  if (aBytes.length !== bBytes.length) return false;
+  return crypto.subtle.timingSafeEqual(aBytes, bBytes);
+}
+
 // Protected by DEBUG_SECRET query param — remove this handler after debugging is done.
 export const debugHandler: Handler<{ Bindings: Env }> = async (c) => {
-  const secret = c.req.query('secret');
-  if (!secret || secret !== c.env.DEBUG_SECRET) {
+  const secret = c.req.query('secret') ?? '';
+  if (!c.env.DEBUG_SECRET || !timingSafeEqual(secret, c.env.DEBUG_SECRET)) {
     return c.text('Forbidden', 403);
   }
 
@@ -27,7 +34,6 @@ export const debugHandler: Handler<{ Bindings: Env }> = async (c) => {
   }
 
   return c.json({
-    gotify_server:       c.env.GOTIFY_SERVER,
     pending_emails:      pending.results,
     processed_messages:  processed.results,
     processed_history:   history.results,

@@ -1,6 +1,6 @@
 {
   "ignoreLabels": ["CATEGORY_PROMOTIONS", "CATEGORY_SOCIAL", "SPAM"],
   "allowlist": [
-    "@parentsquare.com"
+    "@yourcompany.com"
   ]
 }

@@ -32,7 +32,7 @@ A Cloudflare Worker that monitors your Gmail inbox, classifies emails with AI, a
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/zehaolu/email-monitor
+git clone https://github.com/<your-username>/email-monitor
 cd email-monitor
 npm install
 ```
