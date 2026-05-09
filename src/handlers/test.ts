@@ -77,7 +77,7 @@ export async function testNotifyHandler(c: Context<{ Bindings: Env }>): Promise<
 
   if (scenario === 'immediate-critical') {
     const p = formatImmediate(
-      { from: 'Bank of America <security@bankofamerica.com>', subject: 'Unusual sign-in detected on your account', summary: 'We detected a sign-in from a new device in Seattle, WA. If this was not you, secure your account immediately.' },
+      { from: 'Acme Bank <security@acmebank.example>', subject: 'Unusual sign-in detected on your account', summary: 'Sign-in detected from an unrecognized device — secure your account immediately if this was not you.' },
       'Critical',
     );
     await send('immediate-critical', p);

@@ -18,8 +18,21 @@ function authGuard(c: Context<{ Bindings: Env }>): boolean {
 /** GET /admin/accounts — list registered accounts */
 export async function listAccountsHandler(c: Context<{ Bindings: Env }>): Promise<Response> {
   if (!authGuard(c)) return c.json({ error: 'unauthorized' }, 401);
-  const emails = await getAccountEmails(c.env);
-  return c.json({ accounts: emails });
+
+  const emails   = await getAccountEmails(c.env);
+  const filtered = emails.filter(e => e !== '__primary__');
+
+  const accounts = await Promise.all(
+    filtered.map(async (email) => {
+      const [watchExpiry, lastWebhook] = await Promise.all([
+        c.env.KV.get(`gmail:watch_expiry:${email}`),
+        c.env.KV.get(`gmail:last_webhook:${email}`),
+      ]);
+      return { email, watchExpiry, lastWebhook };
+    })
+  );
+
+  return c.json({ accounts });
 }
 
 /** POST /admin/accounts?secret=&email=&refresh_token= — add an account */

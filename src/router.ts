@@ -6,6 +6,7 @@ import { healthHandler }       from './handlers/health';
 import { debugHandler }        from './handlers/debug';
 import { testNotifyHandler }   from './handlers/test';
 import { listAccountsHandler, addAccountHandler, removeAccountHandler } from './handlers/admin';
+import { statsHandler }        from './handlers/stats';
 
 export function createRouter() {
   const app = new Hono<{ Bindings: Env }>();
@@ -16,5 +17,6 @@ export function createRouter() {
   app.post('/admin/accounts', addAccountHandler);
   app.delete('/admin/accounts', removeAccountHandler);
   app.post('/pubsub/webhook', pubsubAuthMiddleware, webhookHandler);
+  app.get('/api/stats', statsHandler);
   return app;
 }
