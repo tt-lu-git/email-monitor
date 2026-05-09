@@ -25,6 +25,8 @@ Key files:
 - `src/notify/formatter.ts` — notification format (title, body, markdown)
 - `src/notify/batch.ts` — reads D1, sends unsent emails per priority tier
 - `src/handlers/cron.ts` — cron schedule per priority
+- `src/handlers/admin.ts` — multi-account management endpoints
+- `src/gmail/auth.ts` — per-account token management (KV-backed)
 - `wrangler.toml` — Cloudflare resource bindings and cron triggers
 
 ## Setup sequence
@@ -55,11 +57,11 @@ Walk the user through these phases in order. Do not skip ahead.
 The user needs a Google Cloud project with Gmail API and Cloud Pub/Sub enabled.
 
 1. **Enable APIs** — in Google Cloud Console: APIs & Services → Enable both Gmail API and Cloud Pub/Sub API.
-2. **OAuth credentials** — Credentials → Create OAuth 2.0 Client ID (type: Web application). Note client ID and secret.
-3. **Refresh token** — Direct the user to https://developers.google.com/oauthplayground/:
-   - Settings → check "Use your own OAuth credentials" → enter client ID and secret
+2. **OAuth credentials** — Credentials → Create OAuth 2.0 Client ID (type: **Web application**). Under Authorized redirect URIs add `https://developers.google.com/oauthplayground`. Note client ID and secret.
+3. **Refresh token for primary account** — Direct the user to https://developers.google.com/oauthplayground/:
+   - Gear icon → check "Use your own OAuth credentials" → enter client ID and secret
    - Scope: `https://mail.google.com/`
-   - Authorize → exchange for tokens → copy the refresh token
+   - Authorize → sign in with the primary Gmail account → exchange for tokens → copy the refresh token
 4. **Pub/Sub topic** — Pub/Sub → Topics → Create topic (e.g. `gmail-push`). Note the full name: `projects/<project>/topics/gmail-push`.
 5. **Push subscription** — on the topic, create a Push subscription pointing to:
    `https://<worker-name>.<subdomain>.workers.dev/pubsub/webhook`
@@ -133,7 +135,7 @@ Register the Gmail push subscription so Google starts sending webhooks:
 curl "https://<worker>.workers.dev/pubsub/renew-watch?secret=<DEBUG_SECRET>"
 ```
 
-The watch auto-renews every day at 08:00 UTC via cron.
+The watch auto-renews once daily via cron.
 
 ### Phase 6: Verify
 
@@ -159,6 +161,25 @@ curl "http://localhost:8787/test/notify?secret=<DEBUG_SECRET>&scenario=batch-hig
 ```
 
 Available test scenarios: `immediate-critical`, `immediate-high`, `batch-high`, `batch-medium`, `batch-all`, `batch-large`, `cron-high`, `cron-medium`, `cron-low`, `cron-all`, `resend-since`.
+
+### Phase 7: Add more Gmail accounts (optional)
+
+The worker monitors multiple Gmail accounts from a single deployment. For each additional account:
+
+1. Go to https://developers.google.com/oauthplayground/ — use the same OAuth credentials (gear icon → your client ID and secret).
+2. Authorize with the additional account's Gmail, exchange for tokens, copy the refresh token.
+3. Register via the admin endpoint:
+   ```bash
+   curl -X POST "https://<worker>.workers.dev/admin/accounts?secret=<DEBUG_SECRET>&email=other@gmail.com&refresh_token=<REFRESH_TOKEN>"
+   ```
+   This stores the token in KV and immediately registers a push watch for the account.
+
+To list all registered accounts:
+```bash
+curl "https://<worker>.workers.dev/admin/accounts?secret=<DEBUG_SECRET>"
+```
+
+**Important:** The OAuth Playground requires a **Web application** OAuth client (not Desktop). If the user created a Desktop client, guide them to create a new Web application client and add `https://developers.google.com/oauthplayground` as an authorized redirect URI.
 
 ## Customisation
 

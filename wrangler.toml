@@ -11,15 +11,15 @@ enabled = true
 #   wrangler kv namespace create email-monitor-kv --preview
 [[kv_namespaces]]
 binding    = "KV"
-id         = "YOUR_KV_ID"
-preview_id = "YOUR_KV_PREVIEW_ID"
+id         = "06a2780a21f649a4a06a4c485f944978"
+preview_id = "3c64b7eb89024760995c30f185dc2fa5"
 
 # Replace database_id after running:
 #   wrangler d1 create email-monitor-db
 [[d1_databases]]
 binding        = "DB"
 database_name  = "email-monitor-db"
-database_id    = "YOUR_D1_DATABASE_ID"
+database_id    = "73872db5-74f3-43af-9855-9e17cc6702d7"
 migrations_dir = "migrations"
 
 [ai]
@@ -30,8 +30,7 @@ crons = [
   "*/30 * * * *",
   "0 * * * *",
   "0 */2 * * *",
-  "0 0 * * *",
-  "0 8 * * *"
+  "0 17 * * *"
 ]
 
 # Secrets — run these before deploying:

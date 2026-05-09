@@ -25,11 +25,9 @@ export function scheduledHandler(
           case '0 */2 * * *':
             await notifyBatch('Low', env);
             break;
-          case '0 0 * * *':
+          case '0 17 * * *':
             await notifyBatch('Not Necessary', env);
             await cleanupOld(env);
-            break;
-          case '0 8 * * *':
             await renewWatch(env);
             break;
           default:
